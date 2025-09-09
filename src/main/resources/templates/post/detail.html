@@ -2,74 +2,514 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>게시글 상세</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .post-section {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .post-section h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .post-info {
+            display: grid;
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .info-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #667eea;
+            min-width: 60px;
+        }
+
+        .info-content {
+            flex: 1;
+            color: #555;
+        }
+
+        .author-section {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 10px;
+        }
+
+        .follow-count {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .count-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .follow-btn, .unfollow-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .follow-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .unfollow-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+        }
+
+        .follow-btn:hover, .unfollow-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .action-section {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .edit-link, .delete-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .edit-link {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .edit-link:hover, .delete-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .comment-section {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .comment-section h3 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .comment-form {
+            margin-bottom: 30px;
+        }
+
+        .comment-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 20px;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background: white;
+            font-size: 16px;
+            resize: vertical;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .comment-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .comment-submit {
+            margin-top: 15px;
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .comment-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .comment-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .comment-item {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .comment-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .comment-content {
+            margin: 8px 0;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .comment-date {
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        .comment-delete {
+            margin-top: 10px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .comment-delete:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .nav-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .nav-link {
+                text-align: center;
+            }
+
+            .follow-count {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .action-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .success-alert, .error-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .success-alert {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        }
+
+        .error-alert {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
 </head>
 <body>
-<h1>게시글 상세</h1>
+<div class="container">
+    <h1>게시글 상세</h1>
 
-<section>
-    <a th:href="@{/}">메인페이지로 이동</a>
-    <a th:href="@{/posts}">글 목록으로 이동</a>
-</section>
-
-<section>
-    <h2>게시글 보기</h2>
-    <section th:object="${post}">
-        <p>제목 : <span th:text="*{title}"></span></p>
-        <p>내용 : <span th:text="*{content}"></span></p>
-        <p>작성자 :
-            <span th:text="*{author.username}"></span>
-            <!-- 나 자신이면 안 뜨고, 다른 사람이면 뜨는데... -->
-            <!-- 이미 팔로우 상태면 팔로우 해제 이런식으로 뜨도록 처리 -->
-        <section id="followCount">
-            팔로잉 : <span id="followingCount"></span>
-            / 팔로워 : <span id="followerCount"></span>
-        </section>
-        <section id="followBox" th:if="${#authentication.name != post.author.username}">
-            <!-- 팔로우 중이면 언팔로우, 팔로우 X. 팔로우      -->
-            <button th:unless="${followCheck}"
-                    id="followButton">팔로우</button>
-            <button th:if="${followCheck}"
-                    id="unfollowButton">언팔로우</button>
-        </section>
-        </p>
-        <!-- 1. 언팔로우 기능 -->
-        <!-- 2. 팔로우/언팔로우 시 버튼 바뀌기 -->
-        <!-- 3. 카운팅 정보를 넣는 섹션 -->
-        <p>작성일 : <span th:text="*{createdAt}"></span></p>
-        <p>수정일 : <span th:text="*{updatedAt}"></span></p>
-        <section th:if="${post.author.username == #authentication.name}">
-            <a th:href="@{/posts/{id}/edit(id=${id})}">수정</a>
-            <form th:action="@{/posts/{id}/delete(id=${id})}" method="post">
-                <button>삭제</button>
-            </form>
-        </section>
+    <section class="nav-section">
+        <a th:href="@{/}" class="nav-link">🏠 메인페이지로 이동</a>
+        <a th:href="@{/posts}" class="nav-link">📋 글 목록으로 이동</a>
     </section>
 
-    <!-- 댓글 -->
-    <section>
-        <h3>댓글</h3>
-        <!-- 댓글 작성 (form) -->
-        <form id="commentForm">
-            <textarea id="commentContent" placeholder="댓글을 입력하세요"></textarea>
-            <button>작성</button>
+    <section class="post-section">
+        <h2>게시글 보기</h2>
+        <div th:object="${post}" class="post-info">
+            <div class="info-item">
+                <span class="info-label">제목</span>
+                <span class="info-content" th:text="*{title}"></span>
+            </div>
+
+            <div class="info-item">
+                <span class="info-label">내용</span>
+                <span class="info-content" th:text="*{content}"></span>
+            </div>
+
+            <div class="info-item">
+                <span class="info-label">작성자</span>
+                <div class="info-content">
+                    <span th:text="*{author.username}"></span>
+
+                    <div class="author-section" th:if="${#authentication.name != post.author.username}">
+                        <div id="followCount" class="follow-count">
+                            <div class="count-item">
+                                👥 팔로잉 : <span id="followingCount">-</span>
+                            </div>
+                            <div class="count-item">
+                                💖 팔로워 : <span id="followerCount">-</span>
+                            </div>
+                        </div>
+
+                        <div id="followBox">
+                            <button th:unless="${followCheck}" id="followButton" class="follow-btn">팔로우</button>
+                            <button th:if="${followCheck}" id="unfollowButton" class="unfollow-btn">언팔로우</button>
+                        </div>
+                    </div>
+
+                    <div class="author-section" th:unless="${#authentication.name != post.author.username}">
+                        <div id="followCount" class="follow-count">
+                            <div class="count-item">
+                                👥 팔로잉 : <span id="followingCount">-</span>
+                            </div>
+                            <div class="count-item">
+                                💖 팔로워 : <span id="followerCount">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <span class="info-label">작성일</span>
+                <span class="info-content" th:text="*{createdAt}"></span>
+            </div>
+
+            <div class="info-item">
+                <span class="info-label">수정일</span>
+                <span class="info-content" th:text="*{updatedAt}"></span>
+            </div>
+
+            <div th:if="${post.author.username == #authentication.name}" class="action-section">
+                <a th:href="@{/posts/{id}/edit(id=${id})}" class="edit-link">✏️ 수정</a>
+                <form th:action="@{/posts/{id}/delete(id=${id})}" method="post" style="display: inline;">
+                    <button type="submit" class="delete-btn">🗑️ 삭제</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section class="comment-section">
+        <h3>💬 댓글</h3>
+
+        <form id="commentForm" class="comment-form">
+            <textarea id="commentContent" class="comment-textarea" placeholder="댓글을 입력하세요..."></textarea>
+            <button type="submit" class="comment-submit">작성하기</button>
         </form>
-        <!-- 이전 댓글 목록 (list) -->
-        <section id="commentList"></section>
+
+        <div id="commentList" class="comment-list">
+            <div class="loading">댓글을 불러오는 중...</div>
+        </div>
     </section>
-</section>
+</div>
+
 <script th:inline="javascript">
-    // 각각 요소에 대한 지정
     const commentForm = document.querySelector("#commentForm");
     const commentContent = document.querySelector("#commentContent");
 
+    function showAlert(message, type = 'success') {
+        const alert = document.createElement('div');
+        alert.className = type === 'success' ? 'success-alert' : 'error-alert';
+        alert.textContent = message;
+        document.body.appendChild(alert);
+
+        setTimeout(() => {
+            alert.remove();
+        }, 3000);
+    }
+
     commentForm.addEventListener("submit", async (event) => {
-        event.preventDefault(); // 기본 form 작업을 막음
-        await fetch(`/api/comments/[[${post.id}]]`,
-            {
+        event.preventDefault();
+
+        if (!commentContent.value.trim()) {
+            showAlert('댓글 내용을 입력해주세요.', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/comments/[[${post.id}]]`, {
                 "method": "POST",
                 "headers": { "Content-Type": "application/json" },
                 "body": JSON.stringify({
@@ -78,119 +518,165 @@
                     "username": [[${#authentication.name}]]
                 })
             });
-        await loadComments();
-    })
+
+            if (response.ok) {
+                commentContent.value = '';
+                await loadComments();
+                showAlert('댓글이 작성되었습니다.');
+            } else {
+                showAlert('댓글 작성에 실패했습니다.', 'error');
+            }
+        } catch (error) {
+            showAlert('오류가 발생했습니다.', 'error');
+        }
+    });
 
     async function loadComments() {
-        const response = await fetch(`/api/comments/[[${post.id}]]`,
-            {
-                // "method": "GET",
+        try {
+            const response = await fetch(`/api/comments/[[${post.id}]]`, {
                 "headers": { "Content-Type": "application/json" }
-            }
-        )
-        console.log(response);
-        if (!response.ok) { return; } // 원래는 예외처리 등을 해야하는데...
+            });
 
-        const comments = await response.json(); // Array(List) -> comment
-        const commentList = document.querySelector("#commentList");
-        commentList.innerHTML = "";
-        for (const c of comments) {
-            // c -> username. == #authentication.name
-            const p = document.createElement("p");
-            p.innerHTML =
-                `<strong>${c.username}</strong> : ${c.content} (${c.createdAt})`
-            if (c.username == [[${#authentication.name}]]) {
-                const button = document.createElement("button");
-                button.textContent = "삭제";
-                button.addEventListener("click", async () => {
-                    await fetch(`/api/comments/${c.id}`, {
-                        method: "DELETE"
-                    });
-                    await loadComments(); // 갱신하는 코드까지
-                })
-                p.appendChild(button);
+            if (!response.ok) return;
+
+            const comments = await response.json();
+            const commentList = document.querySelector("#commentList");
+            commentList.innerHTML = "";
+
+            if (comments.length === 0) {
+                commentList.innerHTML = '<div class="loading">아직 댓글이 없습니다.</div>';
+                return;
             }
-            commentList.appendChild(p);
+
+            for (const c of comments) {
+                const commentDiv = document.createElement("div");
+                commentDiv.className = "comment-item";
+
+                commentDiv.innerHTML = `
+                        <div class="comment-author">${c.username}</div>
+                        <div class="comment-content">${c.content}</div>
+                        <div class="comment-date">${c.createdAt}</div>
+                    `;
+
+                if (c.username == [[${#authentication.name}]]) {
+                    const button = document.createElement("button");
+                    button.textContent = "삭제";
+                    button.className = "comment-delete";
+                    button.addEventListener("click", async () => {
+                        if (confirm('정말로 삭제하시겠습니까?')) {
+                            try {
+                                const deleteResponse = await fetch(`/api/comments/${c.id}`, {
+                                    method: "DELETE"
+                                });
+
+                                if (deleteResponse.ok) {
+                                    await loadComments();
+                                    showAlert('댓글이 삭제되었습니다.');
+                                } else {
+                                    showAlert('댓글 삭제에 실패했습니다.', 'error');
+                                }
+                            } catch (error) {
+                                showAlert('오류가 발생했습니다.', 'error');
+                            }
+                        }
+                    });
+                    commentDiv.appendChild(button);
+                }
+                commentList.appendChild(commentDiv);
+            }
+        } catch (error) {
+            document.querySelector("#commentList").innerHTML = '<div class="loading">댓글을 불러오는데 실패했습니다.</div>';
         }
     }
 
     const followButton = document.querySelector("#followButton");
     async function handleFollow() {
-        const response = await fetch('/api/follow/[[${post.author.id}]]', {
-            method: "POST"
-        });
-        if (response.ok) {
-            await loadCounts();
-            alert("팔로우 완료!");
-            switchButton(false); // true -> 팔로우, false -> 언팔로우
-        } else {
-            alert("팔로우 실패!");
+        try {
+            const response = await fetch('/api/follow/[[${post.author.id}]]', {
+                method: "POST"
+            });
+            if (response.ok) {
+                await loadCounts();
+                showAlert("팔로우 완료!");
+                switchButton(false);
+            } else {
+                showAlert("팔로우 실패!", 'error');
+            }
+        } catch (error) {
+            showAlert("오류가 발생했습니다.", 'error');
         }
     }
     if (followButton) {
-        followButton.addEventListener(
-            "click", handleFollow);
+        followButton.addEventListener("click", handleFollow);
     }
+
     const unfollowButton = document.querySelector("#unfollowButton");
     async function handleUnfollow() {
-        const response = await fetch('/api/follow/[[${post.author.id}]]', {
-            method: "DELETE"
-        });
-        if (response.ok) {
-            await loadCounts();
-            alert("팔로우 해제 완료!");
-            switchButton(true); // true -> 팔로우, false -> 언팔로우
-        } else {
-            alert("팔로우 해제 실패!");
+        try {
+            const response = await fetch('/api/follow/[[${post.author.id}]]', {
+                method: "DELETE"
+            });
+            if (response.ok) {
+                await loadCounts();
+                showAlert("팔로우 해제 완료!");
+                switchButton(true);
+            } else {
+                showAlert("팔로우 해제 실패!", 'error');
+            }
+        } catch (error) {
+            showAlert("오류가 발생했습니다.", 'error');
         }
     }
     if (unfollowButton) {
-        unfollowButton.addEventListener(
-            "click", handleUnfollow);
+        unfollowButton.addEventListener("click", handleUnfollow);
     }
+
     function switchButton(isFollow) {
         const followBox = document.querySelector("#followBox");
-        // isFollow : True/False
-        // True -> Follow
-        // False -> Unfollow
+        if (!followBox) return;
+
         followBox.innerHTML = "";
         const button = document.createElement("button");
         if (isFollow) {
-            // 팔로우 버튼으로 바꾸기
             button.textContent = "팔로우";
+            button.className = "follow-btn";
             button.addEventListener("click", handleFollow);
-        }  else {
-            // 언팔로우 버튼으로 바꾸기
+        } else {
             button.textContent = "언팔로우";
+            button.className = "unfollow-btn";
             button.addEventListener("click", handleUnfollow);
         }
         followBox.appendChild(button);
     }
 
     async function loadCounts() {
-        console.log("loadCounts() 호출!");
-        const response1 = await fetch('/api/follow/[[${post.author.id}]]/followingCount',
-            {
-                // "method": "GET",
-                "headers": { "Content-Type": "application/json" }
+        try {
+            const [response1, response2] = await Promise.all([
+                fetch('/api/follow/[[${post.author.id}]]/followingCount', {
+                    "headers": { "Content-Type": "application/json" }
+                }),
+                fetch('/api/follow/[[${post.author.id}]]/followerCount', {
+                    "headers": { "Content-Type": "application/json" }
+                })
+            ]);
+
+            const followingCount = document.querySelector("#followingCount");
+            const followerCount = document.querySelector("#followerCount");
+
+            if (response1.ok) {
+                followingCount.textContent = await response1.text();
             }
-        )
-        const response2 = await fetch('/api/follow/[[${post.author.id}]]/followerCount',
-            {
-                // "method": "GET",
-                "headers": { "Content-Type": "application/json" }
+            if (response2.ok) {
+                followerCount.textContent = await response2.text();
             }
-        )
-        // 해당 작성자가 팔로우한 수
-        const followingCount = document.querySelector("#followingCount");
-        followingCount.textContent = await response1.text(); // 숫자라서...
-        // follower <- 해당 작성자를 팔로우한 사람 수
-        const followerCount = document.querySelector("#followerCount");
-        followerCount.textContent = await response2.text(); // 숫자라서...
+        } catch (error) {
+            console.error("카운트 로딩 실패:", error);
+        }
     }
 
-    document.addEventListener("DOMContentLoaded", loadComments);
-    document.addEventListener("DOMContentLoaded", loadCounts);
+    document.addEventListener("DOMContentLoaded", async () => {
+        await Promise.all([loadComments(), loadCounts()]);
+    });
 </script>
 </body>
 </html>

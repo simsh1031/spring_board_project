@@ -1,196 +1,314 @@
 <!doctype html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <!-- 문서 인코딩 설정: UTF-8로 한글 등 유니코드 문자 지원 -->
     <meta charset="UTF-8">
-
-    <!-- 반응형 웹 설정: 모바일 기기에서의 화면 표시 최적화 -->
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-
-    <!-- Internet Explorer 호환성 설정: 최신 렌더링 엔진 사용 -->
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-
-    <!-- 페이지 제목: 브라우저 탭에 표시되는 텍스트 -->
     <title>로그인</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 40px;
+            font-size: 2.2rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .input-wrapper {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        input {
+            width: 100%;
+            padding: 18px 20px;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            font-size: 16px;
+            background: #f8f9ff;
+            color: #333;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input:focus {
+            background: white;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        input::placeholder {
+            color: #999;
+            font-weight: 400;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            transition: color 0.3s ease;
+            pointer-events: none;
+        }
+
+        input:focus + .input-icon {
+            color: #667eea;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .login-btn:hover::before {
+            left: 100%;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 25px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: 30px;
+            }
+
+            input, .login-btn {
+                padding: 16px;
+                font-size: 15px;
+            }
+        }
+
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .shape {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) {
+            top: 10%;
+            left: 10%;
+            width: 80px;
+            height: 80px;
+            background: #667eea;
+            border-radius: 50%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            top: 20%;
+            right: 10%;
+            width: 60px;
+            height: 60px;
+            background: #764ba2;
+            border-radius: 30%;
+            animation-delay: 2s;
+        }
+
+        .shape:nth-child(3) {
+            bottom: 10%;
+            left: 20%;
+            width: 40px;
+            height: 40px;
+            background: #667eea;
+            border-radius: 50%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+            }
+        }
+    </style>
 </head>
 <body>
-<!-- 페이지 메인 제목 -->
-<h1>로그인</h1>
+<div class="floating-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+</div>
 
-<!-- 로그인 폼을 포함하는 섹션 -->
-<section>
-    <!--
-    에러 메시지 표시 영역
-    th:if="${error}": Thymeleaf 조건문 - error 속성이 존재할 때만 <p> 태그 렌더링
-    th:text="${error}": error 변수의 값을 텍스트로 표시
+<div class="login-container">
+    <h1>로그인</h1>
 
-    에러 발생 시나리오:
-    1. 잘못된 사용자명/비밀번호 입력
-    2. 계정이 비활성화된 경우
-    3. 기타 인증 실패 상황
+    <section>
+        <p th:if="${error}" th:text="${error}" class="error-message"></p>
 
-    AuthController에서 로그인 실패 시:
-    redirectAttributes.addFlashAttribute("error", "로그인 실패");
-    이렇게 설정된 error 메시지가 여기에 표시됨
-    -->
-    <p th:if="${error}" th:text="${error}"></p>
+        <form th:action="@{/auth/login}" method="post">
+            <div class="form-group">
+                <div class="input-wrapper">
+                    <input name="username" placeholder="ID를 입력해주세요" required>
+                    <div class="input-icon">👤</div>
+                </div>
+            </div>
 
-    <!--
-    로그인 폼
-    th:action="@{/auth/login}": Thymeleaf URL 표현식으로 폼 제출 경로 설정
-    - 컨텍스트 패스 자동 추가
-    - 절대 경로로 변환하여 안전한 제출 보장
+            <div class="form-group">
+                <div class="input-wrapper">
+                    <input type="password" name="password" placeholder="암호를 입력해주세요" required>
+                    <div class="input-icon">🔒</div>
+                </div>
+            </div>
 
-    method="post": HTTP POST 메서드 사용
-    - 보안상 중요한 로그인 정보는 POST로 전송
-    - GET 방식은 URL에 데이터가 노출되어 보안에 취약
-    -->
-    <form th:action="@{/auth/login}" method="post">
-
-        <!--
-        사용자명 입력 필드
-        name="username": AuthController의 @RequestParam String username과 매핑
-        placeholder: 입력 필드에 표시되는 안내 텍스트
-
-        주의사항:
-        - name 속성은 컨트롤러의 @RequestParam 이름과 정확히 일치해야 함
-        - Spring Security의 기본 사용자명 필드명도 "username"
-        -->
-        <input name="username" placeholder="ID를 입력해주세요"> <br>
-
-        <!--
-        비밀번호 입력 필드
-        type="password": 입력 내용을 마스킹 처리 (보안)
-        name="password": AuthController의 @RequestParam String password와 매핑
-
-        보안 특징:
-        - 브라우저에서 입력 내용이 점(●)으로 표시
-        - 브라우저 개발자 도구에서도 값이 숨겨짐
-        - 자동완성 기능 제한
-        -->
-        <input type="password" name="password" placeholder="암호를 입력해주세요"> <br>
-
-        <!--
-        로그인 버튼
-        type 속성이 없으면 기본값은 "submit"
-        클릭 시 form의 action 경로로 POST 요청 전송
-
-        전송되는 데이터 형태:
-        Content-Type: application/x-www-form-urlencoded
-        Body: username=입력값&password=입력값
-        -->
-        <button>로그인</button>
-    </form>
-</section>
-</body>
-</html>
-
-<!--
-=== 로그인 프로세스 흐름 ===
-
-1. 사용자가 로그인 폼 작성
-2. "로그인" 버튼 클릭
-3. POST /auth/login 요청 전송
-4. AuthController.login() 메서드 실행:
-   - AuthenticationManager로 사용자 인증
-   - 인증 성공 시: JWT 토큰 생성 → 쿠키 저장 → /my-page 리다이렉트
-   - 인증 실패 시: error 메시지 → /auth/login 리다이렉트
-5. 리다이렉트된 페이지 표시
-
-=== 보안 고려사항 ===
-
-1. CSRF 보호: Spring Security에서 기본 활성화 (현재 프로젝트는 비활성화)
-2. HTTPS 사용: 운영환경에서 필수 (비밀번호 전송 보안)
-3. 비밀번호 정책: 최소 길이, 복잡도 요구사항
-4. 계정 잠금: 로그인 실패 횟수 제한
-5. 세션 고정 공격 방지: Spring Security 기본 제공
-
-=== 접근성 개선사항 ===
-
-1. 라벨 추가:
-<label for="username">사용자명:</label>
-<input id="username" name="username" placeholder="ID를 입력해주세요">
-
-2. 필수 입력 표시:
-<input name="username" required placeholder="ID를 입력해주세요">
-
-3. 폼 검증:
-<input name="username" required minlength="3" maxlength="50">
-
-4. 에러 메시지 스타일링:
-<p th:if="${error}" th:text="${error}" class="error-message" role="alert"></p>
-
-=== CSS 스타일링 예시 ===
-
-<style>
-.login-container {
-    max-width: 400px;
-    margin: 50px auto;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-control {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.btn-primary {
-    width: 100%;
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.error-message {
-    color: #dc3545;
-    background-color: #f8d7da;
-    padding: 10px;
-    border-radius: 4px;
-    margin-bottom: 15px;
-}
-</style>
-
-=== JavaScript 기능 추가 예시 ===
+            <button type="submit" class="login-btn">로그인</button>
+        </form>
+    </section>
+</div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
-    const usernameInput = document.querySelector('input[name="username"]');
-    const passwordInput = document.querySelector('input[name="password"]');
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('input');
 
-    // 폼 제출 전 유효성 검사
-    form.addEventListener('submit', function(e) {
-        if (!usernameInput.value.trim()) {
-            alert('사용자명을 입력해주세요.');
-            e.preventDefault();
-            return;
-        }
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
 
-        if (!passwordInput.value) {
-            alert('비밀번호를 입력해주세요.');
-            e.preventDefault();
-            return;
-        }
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            const username = document.querySelector('input[name="username"]').value.trim();
+            const password = document.querySelector('input[name="password"]').value;
+
+            if (!username || !password) {
+                e.preventDefault();
+
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = '모든 필드를 입력해주세요.';
+
+                const existingError = document.querySelector('.error-message');
+                if (existingError) {
+                    existingError.remove();
+                }
+
+                form.insertBefore(errorDiv, form.firstChild);
+
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 3000);
+            }
+        });
     });
-
-    // Enter 키로 폼 제출
-    passwordInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            form.submit();
-        }
-    });
-});
 </script>
--->
+</body>
+</html>
