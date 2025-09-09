@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>게시글 목록</title>
+</head>
+<body>
+<h1>게시글 목록</h1>
+
+<section>
+    <a th:href="@{/}">메인페이지로 이동</a>
+</section>
+
+<section>
+    <h2>게시글 목록</h2>
+    <a th:href="@{/posts/new}">게시글 작성</a>
+    <ul>
+        <li th:each="p : ${posts}">
+            번호 : <span th:text="${p.id}"></span>
+            | 작성자 : <span th:text="${p.username}"></span>
+            | 제목 : <span th:text="${p.title}"></span>
+            | 작성일 : <span th:text="${p.createdAt}"></span>
+            | <a th:href="@{'/posts/' + ${p.id}}">자세히 보기</a>
+        </li>
+    </ul>
+    <!-- 페이징 -->
+    <section>
+        <!-- #numbers.sequence -> 끝값을 포함 -->
+        <span th:each="i : ${#numbers.sequence(1, totalPages)}">
+            <a th:if="${i != currentPage}"
+               th:href="@{/posts?page={id}(id=${i})}"
+               th:text="${i}"></a>
+            <a th:if="${i == currentPage}"
+               th:href="@{/posts?page={id}(id=${i})}"
+               th:text="${i}"
+               style="font-weight:bold;">
+            </a>
+        </span>
+    </section>
+    <!-- 검색 -->
+    <form th:action="@{/posts}">
+        <input name="keyword" placeholder="검색어를 입력하세요">
+        <button>검색</button>
+    </form>
+</section>
+
+</body>
+</html>

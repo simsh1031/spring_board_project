@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>관리자 페이지</title>
+</head>
+<body>
+<h1>관리자 페이지</h1>
+
+<section>
+    <a th:href="@{/}">메인페이지로 이동</a>
+</section>
+
+<section>
+    <h2>회원 목록</h2>
+    <ul>
+        <li th:each="u : ${users}">
+            <span th:text="${u.id}"></span>
+            <span th:text="${u.username}"></span>
+            <span th:text="${u.role}"></span>
+            <!-- 본인이 본인을 삭제할 수 없게 -->
+            <form
+                    th:if="${#authentication.name != u.username}"
+                    th:action="@{'/admin/delete/' + ${u.id}}" method="post">
+                <button>탈퇴 처리</button>
+            </form>
+        </li>
+    </ul>
+</section>
+
+</body>
+</html>

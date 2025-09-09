@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- 문서 인코딩 설정: UTF-8로 한글 등 유니코드 문자 지원 -->
+    <meta charset="UTF-8">
+
+    <!-- 반응형 웹 설정: 모바일 기기에서의 화면 표시 최적화 -->
+    <!-- width=device-width: 화면 폭을 기기 폭에 맞춤 -->
+    <!-- user-scalable=no: 사용자 확대/축소 비활성화 -->
+    <!-- initial-scale=1.0: 초기 확대 비율 100% -->
+    <!-- maximum-scale=1.0, minimum-scale=1.0: 최대/최소 확대 비율 고정 -->
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+
+    <!-- Internet Explorer 호환성 설정: 최신 렌더링 엔진(Edge) 사용 -->
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <!-- 페이지 제목: 브라우저 탭에 표시되는 텍스트 -->
+    <title>게시판 프로젝트</title>
+</head>
+<body>
+<!-- 메인 제목: 페이지의 주요 헤딩 -->
+<h1>게시판 프로젝트</h1>
+
+<!--
+네비게이션 링크들: Thymeleaf 템플릿 엔진을 사용한 URL 생성
+th:href="@{...}" : Thymeleaf의 URL 표현식
+- 컨텍스트 패스를 자동으로 추가
+- URL 인코딩 자동 처리
+- 절대 경로로 변환하여 안전한 링크 생성
+-->
+
+<!-- 회원가입 링크 -->
+<!-- @{/auth/register} → http://localhost:8080/auth/register (예시) -->
+<a th:href="@{/auth/register}">회원가입하기</a>
+
+<!-- 로그인 링크 -->
+<!-- @{/auth/login} → http://localhost:8080/auth/login (예시) -->
+<a th:href="@{/auth/login}">로그인하기</a>
+
+<!-- 마이페이지 링크 -->
+<!-- 주의: 실제 컨트롤러 매핑은 /my-page 이므로 올바른 경로는 @{/my-page} -->
+<!-- 현재 코드의 /auth/my-page는 404 오류를 발생시킬 수 있음 -->
+<a th:href="@{/auth/my-page}">마이페이지</a>
+
+<a th:href="@{/posts}">게시글 목록</a>
+
+<!--
+=== Thymeleaf URL 표현식의 장점 ===
+1. 컨텍스트 패스 자동 처리: 애플리케이션 배포 경로가 변경되어도 자동 적용
+2. URL 인코딩: 특수문자나 한글이 포함된 URL도 안전하게 처리
+3. 절대 경로 변환: 상대 경로 문제 방지
+4. IDE 지원: 경로 오타나 존재하지 않는 경로 감지 가능
+
+=== 일반 HTML vs Thymeleaf 비교 ===
+일반 HTML: <a href="/auth/register">회원가입하기</a>
+Thymeleaf: <a th:href="@{/auth/register}">회원가입하기</a>
+
+=== 권장 개선사항 ===
+1. 올바른 마이페이지 경로 수정: @{/my-page}
+2. CSS 스타일링 추가: Bootstrap이나 커스텀 CSS
+3. 로그인 상태에 따른 조건부 표시:
+   - 로그인 전: 회원가입, 로그인 링크 표시
+   - 로그인 후: 마이페이지, 로그아웃 링크 표시
+4. 네비게이션 메뉴 구조화: <nav> 태그 사용
+-->
+</body>
+</html>
+
+<!--
+=== 추가 개선 제안 ===
+
+1. 로그인 상태에 따른 조건부 렌더링:
+<div th:if="${#authentication.name == null}">
+    <a th:href="@{/auth/register}">회원가입하기</a>
+    <a th:href="@{/auth/login}">로그인하기</a>
+</div>
+<div th:if="${#authentication.name != null}">
+    <span th:text="'안녕하세요, ' + ${#authentication.name} + '님'"></span>
+    <a th:href="@{/my-page}">마이페이지</a>
+    <a th:href="@{/auth/logout}">로그아웃</a>
+</div>
+
+2. Bootstrap을 활용한 스타일링:
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+        <a class="navbar-brand" href="/">게시판 프로젝트</a>
+        ... 네비게이션 링크들 ...
+</div>
+</nav>
+
+3. 의미론적 HTML 구조:
+<header>
+    <nav>
+        <ul>
+            <li><a th:href="@{/auth/register}">회원가입</a></li>
+            <li><a th:href="@{/auth/login}">로그인</a></li>
+        </ul>
+    </nav>
+</header>
+<main>
+    <h1>게시판 프로젝트</h1>
+    ... 메인 콘텐츠 ...
+</main>
+-->

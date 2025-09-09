@@ -1,0 +1,201 @@
+# Spring Boot 애플리케이션 설정 파일 (YAML 형식)
+# 이 파일은 애플리케이션의 기본 설정을 정의하며, 환경별 설정 파일(application-{profile}.yml)과 함께 사용됨
+
+spring:
+  application:
+    # 애플리케이션 이름 설정
+    # - Spring Boot 관리 콘솔, 모니터링 도구에서 식별용으로 사용
+    # - Spring Cloud 환경에서 서비스 이름으로도 활용
+    name: boardpjt
+  
+  # Spring Profile 설정
+  # Profile을 통해 환경별로 다른 설정을 적용할 수 있음
+  profiles:
+    # 기본 활성화할 프로필 지정
+    # dev: 개발 환경, prod: 운영 환경, test: 테스트 환경 등
+#    active: dev
+    active: prod
+    # 이 설정으로 application-dev.yml 파일이 자동으로 로드됨
+    # 
+    # Profile 우선순위:
+    # 1. application-{active-profile}.yml (높은 우선순위)
+    # 2. application.yml (기본 설정)
+    # 
+    # 활용 예시:
+    # - 로컬 개발: active: dev
+    # - 스테이징: active: staging  
+    # - 운영 환경: active: prod
+
+  # === 공통 설정 영역 ===
+  # 모든 환경에서 공통으로 사용할 설정들을 여기에 정의
+  # 환경별 파일에서 이 값들을 오버라이드할 수 있음
+  
+  # 데이터베이스 연결 설정 (JPA 사용)
+  datasource:
+    # MySQL JDBC 드라이버 클래스 지정
+    # Spring Boot 2.0+ 에서는 com.mysql.cj.jdbc.Driver 사용 권장
+    # (구버전: com.mysql.jdbc.Driver는 deprecated)
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    
+    # 참고: URL, username, password는 보안상 환경별 파일에서 설정
+    # application-dev.yml, application-prod.yml에서 개별 정의
+  
+  # JPA/Hibernate 설정
+  jpa:
+    # SQL 쿼리 콘솔 출력 설정 (개발 시 디버깅용)
+    # true: 실행되는 모든 SQL이 콘솔에 출력됨
+    # 운영환경에서는 false로 설정하여 성능 최적화
+    show-sql: true
+    
+    # Hibernate 추가 설정
+    properties:
+      hibernate:
+        # SQL 포맷팅 설정 (가독성 향상)
+        # true: SQL이 예쁘게 포맷되어 출력 (줄바꿈, 들여쓰기 적용)
+        # show-sql과 함께 사용하면 디버깅에 매우 유용
+        format_sql: true
+        
+        # === 추가 설정 가능한 Hibernate 옵션들 ===
+        # dialect: org.hibernate.dialect.MySQL8Dialect  # MySQL 방언 설정
+        # use_sql_comments: true                         # SQL에 주석 추가
+        # jdbc.batch_size: 20                           # 배치 처리 크기
+        # order_inserts: true                           # INSERT 순서 최적화
+        # order_updates: true                           # UPDATE 순서 최적화
+
+# === JWT 설정 (예시) ===
+# JWT 관련 설정은 보안상 환경별 파일에서 정의하는 것이 권장됨
+# jwt:
+#   secret: ${JWT_SECRET:defaultSecretKey123456789012345678901234567890}
+#   expiry:
+#     access: ${JWT_ACCESS_EXPIRY:3600000}   # 1시간 (밀리초)
+#     refresh: ${JWT_REFRESH_EXPIRY:604800000} # 7일 (밀리초)
+
+# === 로깅 설정 (예시) ===
+# logging:
+#   level:
+#     com.example.boardpjt: DEBUG          # 애플리케이션 로그 레벨
+#     org.springframework.security: DEBUG  # Spring Security 로그
+#     org.hibernate.SQL: DEBUG             # Hibernate SQL 로그
+#     org.hibernate.type.descriptor.sql.BasicBinder: TRACE # 바인딩 파라미터
+
+# === 서버 설정 (예시) ===
+# server:
+#   port: ${SERVER_PORT:8080}              # 서버 포트 (환경변수 우선)
+#   servlet:
+#     context-path: /api                   # 컨텍스트 패스
+#   compression:
+#     enabled: true                        # HTTP 압축 활성화
+
+---
+# === 환경별 설정 파일 가이드 ===
+
+# application-dev.yml (개발 환경)
+# 개발자 로컬 환경에서 사용하는 설정
+# - 로컬 데이터베이스 연결 정보
+# - 상세한 로깅 설정
+# - 개발 편의 기능 활성화
+
+#spring:
+#  datasource:
+#    # 로컬 MySQL 또는 테스트 DB 연결
+#    url: jdbc:mysql://localhost:3306/boardpjt_dev?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+#    username: dev_user
+#    password: dev_password
+#    
+#    # 또는 클라우드 개발 DB 사용 (Aiven.io 예시)
+#    # url: jdbc:mysql://mysql-xxx-xxx-xxx.x.aivencloud.com:port/defaultdb?ssl-mode=REQUIRED
+#    # username: avnadmin  
+#    # password: AVNS_xxx
+#    
+#  jpa:
+#    hibernate:
+#      # 개발 환경: 스키마 자동 업데이트
+#      # create: 매번 테이블 삭제 후 재생성 (데이터 손실)
+#      # create-drop: 애플리케이션 종료 시 테이블 삭제
+#      # update: 기존 테이블 유지하면서 스키마 변경사항만 적용 (권장)
+#      # validate: 스키마 검증만 수행, 변경하지 않음
+#      # none: 아무것도 하지 않음
+#      ddl-auto: update
+#
+#jwt:
+#  secret: devSecretKey123456789012345678901234567890
+#  expiry:
+#    access: 3600000    # 1시간
+#    refresh: 604800000 # 7일
+#
+#logging:
+#  level:
+#    com.example.boardpjt: DEBUG
+#    org.springframework.security: DEBUG
+
+---
+# application-prod.yml (운영 환경)  
+# 실제 서비스 운영 환경에서 사용하는 설정
+# - 운영 데이터베이스 연결 정보
+# - 보안 강화 설정
+# - 성능 최적화 설정
+
+#spring:
+#  datasource:
+#    url: jdbc:mysql://prod-db-server:3306/boardpjt_prod?useSSL=true&serverTimezone=Asia/Seoul
+#    username: ${DB_USERNAME}     # 환경변수로 관리
+#    password: ${DB_PASSWORD}     # 환경변수로 관리
+#    hikari:                      # 커넥션 풀 설정
+#      maximum-pool-size: 20
+#      minimum-idle: 5
+#      connection-timeout: 30000
+#      
+#  jpa:
+#    hibernate:
+#      ddl-auto: validate         # 운영환경에서는 스키마 변경 금지
+#    show-sql: false             # 운영환경에서는 SQL 출력 비활성화
+#    properties:
+#      hibernate:
+#        format_sql: false       # 포맷팅도 비활성화
+#        
+#jwt:
+#  secret: ${JWT_SECRET}         # 환경변수로 관리 (보안)
+#  expiry:
+#    access: 1800000             # 30분 (보안 강화)
+#    refresh: 604800000          # 7일
+#
+#server:
+#  port: 8080
+#  compression:
+#    enabled: true               # 성능 최적화
+#    
+#logging:
+#  level:
+#    com.example.boardpjt: INFO  # 운영환경에서는 INFO 레벨
+#    org.springframework.security: WARN
+#  file:
+#    name: /var/log/boardpjt.log # 로그 파일 저장
+
+---
+# === 보안 고려사항 ===
+
+# 1. 민감한 정보는 환경변수로 관리:
+#    - 데이터베이스 비밀번호
+#    - JWT 시크릿 키  
+#    - API 키 등
+
+# 2. Profile별 설정 분리:
+#    - 개발: 편의성 중심
+#    - 운영: 보안과 성능 중심
+
+# 3. 설정 파일 관리:
+#    - application.yml: 공통 설정, 버전 관리 포함
+#    - application-{profile}.yml: 환경별 설정, 민감정보 제외
+#    - 민감한 설정은 환경변수나 외부 설정 서버 활용
+
+# === 성능 최적화 고려사항 ===
+
+# 1. 운영환경 설정:
+#    - show-sql: false (성능 향상)
+#    - 커넥션 풀 최적화
+#    - HTTP 압축 활성화
+
+# 2. 개발환경 설정:
+#    - show-sql: true (디버깅 편의)
+#    - format_sql: true (가독성)
+#    - ddl-auto: update (스키마 자동 관리)

@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>게시글 상세</title>
+</head>
+<body>
+<h1>게시글 상세</h1>
+
+<section>
+    <a th:href="@{/}">메인페이지로 이동</a>
+    <a th:href="@{/posts}">글 목록으로 이동</a>
+</section>
+
+<section>
+    <h2>게시글 보기</h2>
+    <section th:object="${post}">
+        <p>제목 : <span th:text="*{title}"></span></p>
+        <p>내용 : <span th:text="*{content}"></span></p>
+        <p>작성자 :
+            <span th:text="*{author.username}"></span>
+            <!-- 나 자신이면 안 뜨고, 다른 사람이면 뜨는데... -->
+            <!-- 이미 팔로우 상태면 팔로우 해제 이런식으로 뜨도록 처리 -->
+        <section id="followCount">
+            팔로잉 : <span id="followingCount"></span>
+            / 팔로워 : <span id="followerCount"></span>
+        </section>
+        <section id="followBox" th:if="${#authentication.name != post.author.username}">
+            <!-- 팔로우 중이면 언팔로우, 팔로우 X. 팔로우      -->
+            <button th:unless="${followCheck}"
+                    id="followButton">팔로우</button>
+            <button th:if="${followCheck}"
+                    id="unfollowButton">언팔로우</button>
+        </section>
+        </p>
+        <!-- 1. 언팔로우 기능 -->
+        <!-- 2. 팔로우/언팔로우 시 버튼 바뀌기 -->
+        <!-- 3. 카운팅 정보를 넣는 섹션 -->
+        <p>작성일 : <span th:text="*{createdAt}"></span></p>
+        <p>수정일 : <span th:text="*{updatedAt}"></span></p>
+        <section th:if="${post.author.username == #authentication.name}">
+            <a th:href="@{/posts/{id}/edit(id=${id})}">수정</a>
+            <form th:action="@{/posts/{id}/delete(id=${id})}" method="post">
+                <button>삭제</button>
+            </form>
+        </section>
+    </section>
+
+    <!-- 댓글 -->
+    <section>
+        <h3>댓글</h3>
+        <!-- 댓글 작성 (form) -->
+        <form id="commentForm">
+            <textarea id="commentContent" placeholder="댓글을 입력하세요"></textarea>
+            <button>작성</button>
+        </form>
+        <!-- 이전 댓글 목록 (list) -->
+        <section id="commentList"></section>
+    </section>
+</section>
+<script th:inline="javascript">
+    // 각각 요소에 대한 지정
+    const commentForm = document.querySelector("#commentForm");
+    const commentContent = document.querySelector("#commentContent");
+
+    commentForm.addEventListener("submit", async (event) => {
+        event.preventDefault(); // 기본 form 작업을 막음
+        await fetch(`/api/comments/[[${post.id}]]`,
+            {
+                "method": "POST",
+                "headers": { "Content-Type": "application/json" },
+                "body": JSON.stringify({
+                    "postId": [[${post.id}]],
+                    "content": commentContent.value,
+                    "username": [[${#authentication.name}]]
+                })
+            });
+        await loadComments();
+    })
+
+    async function loadComments() {
+        const response = await fetch(`/api/comments/[[${post.id}]]`,
+            {
+                // "method": "GET",
+                "headers": { "Content-Type": "application/json" }
+            }
+        )
+        console.log(response);
+        if (!response.ok) { return; } // 원래는 예외처리 등을 해야하는데...
+
+        const comments = await response.json(); // Array(List) -> comment
+        const commentList = document.querySelector("#commentList");
+        commentList.innerHTML = "";
+        for (const c of comments) {
+            // c -> username. == #authentication.name
+            const p = document.createElement("p");
+            p.innerHTML =
+                `<strong>${c.username}</strong> : ${c.content} (${c.createdAt})`
+            if (c.username == [[${#authentication.name}]]) {
+                const button = document.createElement("button");
+                button.textContent = "삭제";
+                button.addEventListener("click", async () => {
+                    await fetch(`/api/comments/${c.id}`, {
+                        method: "DELETE"
+                    });
+                    await loadComments(); // 갱신하는 코드까지
+                })
+                p.appendChild(button);
+            }
+            commentList.appendChild(p);
+        }
+    }
+
+    const followButton = document.querySelector("#followButton");
+    async function handleFollow() {
+        const response = await fetch('/api/follow/[[${post.author.id}]]', {
+            method: "POST"
+        });
+        if (response.ok) {
+            await loadCounts();
+            alert("팔로우 완료!");
+            switchButton(false); // true -> 팔로우, false -> 언팔로우
+        } else {
+            alert("팔로우 실패!");
+        }
+    }
+    if (followButton) {
+        followButton.addEventListener(
+            "click", handleFollow);
+    }
+    const unfollowButton = document.querySelector("#unfollowButton");
+    async function handleUnfollow() {
+        const response = await fetch('/api/follow/[[${post.author.id}]]', {
+            method: "DELETE"
+        });
+        if (response.ok) {
+            await loadCounts();
+            alert("팔로우 해제 완료!");
+            switchButton(true); // true -> 팔로우, false -> 언팔로우
+        } else {
+            alert("팔로우 해제 실패!");
+        }
+    }
+    if (unfollowButton) {
+        unfollowButton.addEventListener(
+            "click", handleUnfollow);
+    }
+    function switchButton(isFollow) {
+        const followBox = document.querySelector("#followBox");
+        // isFollow : True/False
+        // True -> Follow
+        // False -> Unfollow
+        followBox.innerHTML = "";
+        const button = document.createElement("button");
+        if (isFollow) {
+            // 팔로우 버튼으로 바꾸기
+            button.textContent = "팔로우";
+            button.addEventListener("click", handleFollow);
+        }  else {
+            // 언팔로우 버튼으로 바꾸기
+            button.textContent = "언팔로우";
+            button.addEventListener("click", handleUnfollow);
+        }
+        followBox.appendChild(button);
+    }
+
+    async function loadCounts() {
+        console.log("loadCounts() 호출!");
+        const response1 = await fetch('/api/follow/[[${post.author.id}]]/followingCount',
+            {
+                // "method": "GET",
+                "headers": { "Content-Type": "application/json" }
+            }
+        )
+        const response2 = await fetch('/api/follow/[[${post.author.id}]]/followerCount',
+            {
+                // "method": "GET",
+                "headers": { "Content-Type": "application/json" }
+            }
+        )
+        // 해당 작성자가 팔로우한 수
+        const followingCount = document.querySelector("#followingCount");
+        followingCount.textContent = await response1.text(); // 숫자라서...
+        // follower <- 해당 작성자를 팔로우한 사람 수
+        const followerCount = document.querySelector("#followerCount");
+        followerCount.textContent = await response2.text(); // 숫자라서...
+    }
+
+    document.addEventListener("DOMContentLoaded", loadComments);
+    document.addEventListener("DOMContentLoaded", loadCounts);
+</script>
+</body>
+</html>

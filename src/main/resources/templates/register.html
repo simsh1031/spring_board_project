@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- 문서 인코딩 설정: UTF-8로 한글 등 유니코드 문자 지원 -->
+    <meta charset="UTF-8">
+
+    <!-- 반응형 웹 설정: 모바일 기기에서의 화면 표시 최적화 -->
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+
+    <!-- Internet Explorer 호환성 설정: 최신 렌더링 엔진 사용 -->
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <!-- 페이지 제목: 브라우저 탭에 표시되는 텍스트 -->
+    <title>회원 가입</title>
+</head>
+<body>
+<!-- 페이지 메인 제목 -->
+<h1>회원 가입</h1>
+
+<!-- 회원가입 폼을 포함하는 섹션 -->
+<section>
+    <!--
+    에러 메시지 표시 영역
+    th:if="${error}": Thymeleaf 조건문 - error 속성이 존재할 때만 <p> 태그 렌더링
+    th:text="${error}": error 변수의 값을 텍스트로 표시 (XSS 방지를 위한 HTML 이스케이프 처리)
+
+    에러 발생 시나리오:
+    1. 사용자명 중복: UserAccountService에서 "이미 존재하는 사용자" 예외 발생
+    2. 유효성 검증 실패: 사용자명/비밀번호 형식 오류
+    3. 데이터베이스 연결 오류: 서버 문제로 인한 회원가입 실패
+
+    AuthController에서 회원가입 실패 시:
+    redirectAttributes.addFlashAttribute("error", e.getMessage());
+    이렇게 설정된 error 메시지가 여기에 표시됨
+    -->
+    <p th:if="${error}" th:text="${error}"></p>
+
+    <!--
+    회원가입 폼
+    th:action="@{/auth/register}": Thymeleaf URL 표현식으로 폼 제출 경로 설정
+    - 컨텍스트 패스 자동 추가하여 안전한 URL 생성
+    - 절대 경로로 변환하여 상대 경로 문제 방지
+    - URL 인코딩 자동 처리
+
+    method="post": HTTP POST 메서드 사용
+    - 보안상 중요한 회원가입 정보는 POST로 전송
+    - GET 방식은 URL에 데이터가 노출되어 보안에 취약
+    - POST는 HTTP Body에 데이터를 포함하여 전송
+    -->
+    <form th:action="@{/auth/register}" method="post">
+
+        <!--
+        사용자명 입력 필드
+        name="username": AuthController의 @RequestParam String username과 매핑
+        - Spring MVC가 HTTP 요청 파라미터와 메서드 매개변수를 자동 바인딩
+        - 필드명이 정확히 일치해야 함 (대소문자 구분)
+
+        placeholder: 입력 필드에 표시되는 안내 텍스트
+        - 사용자가 입력 전까지 회색 텍스트로 표시
+        - 실제 입력값이 아니므로 서버로 전송되지 않음
+        - 접근성을 위해 label 태그 사용도 고려
+
+        데이터베이스 제약조건과의 연관성:
+        - UserAccount 엔티티의 username 필드: unique=true, length=50
+        - 중복 검사는 서버 측에서 UserAccountService.register()에서 수행
+        -->
+        <input name="username" placeholder="ID를 입력해주세요"> <br>
+
+        <!--
+        비밀번호 입력 필드
+        type="password": 입력 내용을 마스킹 처리하여 보안 강화
+        - 브라우저에서 입력 내용이 점(●) 또는 별표(*)로 표시
+        - 브라우저 개발자 도구에서도 값이 숨겨짐
+        - 복사/붙여넣기 시에도 마스킹 유지
+        - 자동완성 기능 제한 (브라우저 설정에 따라)
+
+        name="password": AuthController의 @RequestParam String password와 매핑
+
+        보안 처리 과정:
+        1. 사용자 입력 (평문 비밀번호)
+        2. HTTPS로 암호화되어 서버 전송 (권장)
+        3. UserAccountService에서 PasswordEncoder.encode()로 해시화
+        4. 데이터베이스에 해시된 비밀번호 저장 (평문 저장 안 함)
+        -->
+        <input type="password" name="password" placeholder="암호를 입력해주세요"> <br>
+
+        <!--
+        회원가입 제출 버튼
+        type 속성이 없으면 기본값은 "submit"
+        클릭 시 form의 action 경로로 POST 요청 전송
+
+        전송되는 데이터 형태:
+        Content-Type: application/x-www-form-urlencoded
+        Body: username=입력값&password=입력값
+
+        서버 처리 과정:
+        1. AuthController.register() 메서드 호출
+        2. UserAccountService.register()로 비즈니스 로직 처리
+        3. 성공 시: 홈페이지(/) 리다이렉트
+        4. 실패 시: 에러 메시지와 함께 회원가입 페이지로 리다이렉트
+        -->
+        <button>가입</button>
+    </form>
+</section>
+</body>
+</html>
+
+<!--
+=== 회원가입 프로세스 흐름 ===
+
+1. 사용자가 회원가입 폼 작성
+2. "가입" 버튼 클릭
+3. POST /auth/register 요청 전송
+4. AuthController.register() 메서드 실행:
+   a) UserAccountService.register() 호출
+   b) 사용자명 중복 검사 (Repository.findByUsername())
+   c) 비밀번호 암호화 (PasswordEncoder.encode())
+   d) 기본 권한 설정 (ROLE_USER)
+   e) 데이터베이스 저장 (Repository.save())
+5. 성공 시: / (홈페이지) 리다이렉트
+6. 실패 시: error 메시지와 함께 /auth/register 리다이렉트
+
+=== 데이터 유효성 검증 ===
+
+현재 구현: 서버 사이드에서만 중복 검사
+개선 제안:
+1. 클라이언트 사이드 검증 (JavaScript)
+2. Bean Validation 어노테이션 활용
+3. 실시간 중복 검사 (AJAX)
+
+=== 보안 고려사항 ===
+
+1. 비밀번호 보안:
+   - type="password"로 마스킹 처리
+   - HTTPS 전송 권장 (평문 전송 방지)
+   - PasswordEncoder로 해시화 저장
+
+2. XSS 방지:
+   - th:text="${error}"로 HTML 이스케이프 처리
+   - 사용자 입력값 검증 및 필터링
+
+3. CSRF 방지:
+   - 현재는 비활성화되어 있으나, 운영환경에서는 활성화 권장
+   - Spring Security의 CSRF 토큰 자동 생성/검증
+
+=== 사용자 경험 개선사항 ===
+
+1. 입력 필드 개선:
+<div class="form-group">
+    <label for="username">사용자명 *</label>
+    <input id="username" name="username" required
+           minlength="3" maxlength="50"
+           placeholder="3-50자의 영문, 숫자 조합">
+    <small>영문, 숫자 조합으로 3-50자 입력해주세요</small>
+</div>
+
+2. 비밀번호 정책 안내:
+<div class="form-group">
+    <label for="password">비밀번호 *</label>
+    <input id="password" type="password" name="password" required
+           minlength="8" pattern="^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+           placeholder="8자 이상, 영문/숫자/특수문자 포함">
+    <small>8자 이상, 영문/숫자/특수문자를 포함해주세요</small>
+</div>
+
+3. 비밀번호 확인 필드:
+<div class="form-group">
+    <label for="passwordConfirm">비밀번호 확인 *</label>
+    <input id="passwordConfirm" type="password" name="passwordConfirm"
+           required placeholder="비밀번호를 다시 입력해주세요">
+</div>
+
+=== CSS 스타일링 예시 ===
+
+<style>
+.register-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fafafa;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.btn-register {
+    width: 100%;
+    padding: 12px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-register:hover {
+    background-color: #218838;
+}
+
+.error-message {
+    color: #dc3545;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.help-text {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 5px;
+}
+</style>
+
+=== JavaScript 기능 추가 예시 ===
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const usernameInput = document.querySelector('input[name="username"]');
+    const passwordInput = document.querySelector('input[name="password"]');
+
+    // 실시간 유효성 검사
+    usernameInput.addEventListener('input', function() {
+        const value = this.value;
+        if (value.length < 3) {
+            this.setCustomValidity('사용자명은 3자 이상이어야 합니다.');
+        } else if (value.length > 50) {
+            this.setCustomValidity('사용자명은 50자 이하여야 합니다.');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+
+    // 비밀번호 강도 체크
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        const hasLetter = /[a-zA-Z]/.test(password);
+        const hasNumber = /\d/.test(password);
+        const hasSpecial = /[@$!%*?&]/.test(password);
+        const isLongEnough = password.length >= 8;
+
+        if (!isLongEnough || !hasLetter || !hasNumber || !hasSpecial) {
+            this.setCustomValidity('비밀번호는 8자 이상, 영문/숫자/특수문자를 포함해야 합니다.');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+
+    // 폼 제출 전 최종 검증
+    form.addEventListener('submit', function(e) {
+        if (!usernameInput.value.trim()) {
+            alert('사용자명을 입력해주세요.');
+            e.preventDefault();
+            usernameInput.focus();
+            return;
+        }
+
+        if (!passwordInput.value) {
+            alert('비밀번호를 입력해주세요.');
+            e.preventDefault();
+            passwordInput.focus();
+            return;
+        }
+    });
+});
+</script>
+-->
