@@ -72,7 +72,7 @@ public class PostDTO {
 
         // === 추가 필드 고려사항 ===
         // 향후 확장 시 추가할 수 있는 필드들:
-        // private String category;        // 게시물 카테고리
+        private String category;        // 게시물 카테고리
         // private List<String> tags;      // 태그 목록
         // private boolean isPrivate;      // 비공개 게시물 여부
         // private Long parentId;          // 답글인 경우 부모 게시물 ID
@@ -143,7 +143,9 @@ public class PostDTO {
              * - JavaScript에서 Date 객체로 파싱 가능
              * - 상대 시간 표시 ("3시간 전", "2일 전" 등) 구현 가능
              */
-            String createdAt
+            String createdAt,
+
+            String category
 
             // === 추가 필드 고려사항 ===
             // 향후 확장 시 추가할 수 있는 필드들:

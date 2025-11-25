@@ -1,175 +1,655 @@
 <!doctype html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <!-- 문서 인코딩 설정: UTF-8로 한글 등 유니코드 문자 지원 -->
     <meta charset="UTF-8">
-
-    <!-- 반응형 웹 설정: 모바일 기기에서의 화면 표시 최적화 -->
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-
-    <!-- Internet Explorer 호환성 설정: 최신 렌더링 엔진 사용 -->
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-
-    <!-- 페이지 제목: 브라우저 탭에 표시되는 텍스트 -->
     <title>마이페이지</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        section {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .welcome {
+            text-align: center;
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .welcome span {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .role-info {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+            color: #666;
+        }
+
+        .role-info span {
+            color: #764ba2;
+            font-weight: 600;
+        }
+
+        a, button {
+            display: block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            margin: 10px 0;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 500;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            width: 100%;
+        }
+
+        a:hover, button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* ★ 팔로잉/팔로워 통계 섹션 */
+        .follow-stats {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .stat-item:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+
+        .stat-item button {
+            background: none;
+            color: #667eea;
+            padding: 0;
+            margin: 0;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            width: auto;
+            text-decoration: underline;
+            transition: color 0.2s;
+            box-shadow: none;
+        }
+
+        .stat-item button:hover {
+            color: #764ba2;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        button.logout-btn {
+            background: #dc3545;
+            width: 100%;
+        }
+
+        button.logout-btn:hover {
+            box-shadow: 0 8px 20px rgba(220, 53, 69, 0.4);
+        }
+
+        /* ★ 모달 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 100%;
+            max-height: 500px;
+            display: flex;
+            flex-direction: column;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+            color: #333;
+            margin: 0;
+        }
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: auto;
+            transition: color 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            justify-content: space-between;
+        }
+
+        .user-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .user-id {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .user-actions button {
+            padding: 6px 12px;
+            font-size: 12px;
+            width: auto;
+            margin: 0;
+            border-radius: 6px;
+        }
+
+        .unfollow-btn {
+            background: #dc3545;
+        }
+
+        .unfollow-btn:hover {
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 2px solid #f0f0f0;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* 로딩 상태 */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f0f0f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            section {
+                max-width: 100%;
+            }
+
+            .modal-content {
+                max-width: 100%;
+                max-height: 70vh;
+            }
+        }
+    </style>
 </head>
 <body>
-<!-- 페이지 메인 제목 -->
-<h1>마이페이지</h1>
-
-<!-- 사용자 환영 메시지를 포함하는 섹션 -->
 <section>
-    <!--
-    사용자 환영 메시지
-    th:text="${username}": Thymeleaf 텍스트 표현식
-    - MainController에서 Model에 추가된 "username" 속성값을 표시
-    - authentication.getName()으로 얻은 현재 로그인한 사용자명
-    - XSS 공격 방지를 위해 자동으로 HTML 이스케이프 처리
+    <h1>마이페이지</h1>
+    <p class="welcome"><span th:text="${username}"></span>님 반갑습니다!</p>
+    <a th:href="@{/posts}">게시글 목록</a>
+    <a th:href="@{/posts/new}">게시글 작성</a>
 
-    데이터 흐름:
-    1. JWT 필터에서 토큰 검증 → SecurityContext에 Authentication 저장
-    2. MainController에서 authentication.getName() 호출
-    3. Model에 "username" 속성으로 추가: model.addAttribute("username", authentication.getName())
-    4. Thymeleaf가 ${username}을 실제 사용자명으로 치환하여 렌더링
+    <!-- ★ 팔로잉/팔로워 통계 -->
+    <div class="follow-stats">
+        <div class="stat-item">
+            <div class="stat-label">팔로잉</div>
+            <div class="stat-number" id="followingCount">0</div>
+            <button type="button" onclick="openFollowingModal()">보기</button>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">팔로워</div>
+            <div class="stat-number" id="followerCount">0</div>
+            <button type="button" onclick="openFollowerModal()">보기</button>
+        </div>
+    </div>
 
-    보안 특징:
-    - th:text는 HTML 태그를 텍스트로 처리하여 XSS 공격 방지
-    - 예: 사용자명이 "<script>alert('xss')</script>"인 경우
-    - 실제 출력: "&lt;script&gt;alert('xss')&lt;/script&gt;님 반갑습니다!"
-    -->
-    <span th:text="${username}"></span>님 반갑습니다!
-    <p>
-        당신은 <span th:text="${role}"></span>입니다!
-    </p>
-
+    <p class="role-info">당신은 <span th:text="${role}"></span>입니다!</p>
     <a th:if="${role == 'ROLE_ADMIN'}" th:href="@{/admin}">관리자 페이지로 이동</a>
 
-    <a th:href="@{/}">메인페이지로 이동</a>
-
     <form th:action="@{/auth/logout}" method="post">
-        <button>로그아웃</button>
+        <button type="submit" class="logout-btn">로그아웃</button>
     </form>
 </section>
+
+<!-- ★ 팔로잉 목록 모달 -->
+<div id="followingModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>팔로잉</h2>
+            <button type="button" class="modal-close-btn" onclick="closeFollowingModal()">✕</button>
+        </div>
+        <div class="modal-body" id="followingList">
+            <div class="loading">
+                <div class="spinner"></div>
+            </div>
+        </div>
+        <div class="modal-footer" id="followingFooter"></div>
+    </div>
+</div>
+
+<!-- ★ 팔로워 목록 모달 -->
+<div id="followerModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>팔로워</h2>
+            <button type="button" class="modal-close-btn" onclick="closeFollowerModal()">✕</button>
+        </div>
+        <div class="modal-body" id="followerList">
+            <div class="loading">
+                <div class="spinner"></div>
+            </div>
+        </div>
+        <div class="modal-footer" id="followerFooter"></div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    // ★ 현재 사용자 ID (Thymeleaf에서 주입)
+    const currentUserId = /*[[${userId}]]*/ 0;
+    const currentUsername = /*[[${username}]]*/ "";
+
+    // 페이지 로드 시 팔로잉/팔로워 수 업데이트
+    document.addEventListener('DOMContentLoaded', function() {
+        updateFollowStats();
+    });
+
+    /**
+     * 팔로잉/팔로워 수 업데이트
+     * ★ credentials: 'include' 추가하여 쿠키(JWT) 전송
+     */
+    function updateFollowStats() {
+        // 팔로잉 수
+        fetch(`/api/follow/${currentUserId}/followingCount`, {
+            method: 'GET',
+            credentials: 'include'  // ★ 쿠키 포함
+        })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(count => {
+                document.getElementById('followingCount').textContent = count;
+            })
+            .catch(err => console.error('팔로잉 수 조회 실패:', err));
+
+        // 팔로워 수
+        fetch(`/api/follow/${currentUserId}/followerCount`, {
+            method: 'GET',
+            credentials: 'include'  // ★ 쿠키 포함
+        })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(count => {
+                document.getElementById('followerCount').textContent = count;
+            })
+            .catch(err => console.error('팔로워 수 조회 실패:', err));
+    }
+
+    /**
+     * 팔로잉 목록 모달 열기 ★
+     */
+    function openFollowingModal() {
+        const modal = document.getElementById('followingModal');
+        const listContainer = document.getElementById('followingList');
+
+        modal.classList.add('show');
+        listContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+        console.log('팔로잉 목록 조회 시작:', `/api/follow/${currentUserId}/following`);
+
+        // ★ 팔로잉 목록 API 호출 - credentials: 'include' 추가
+        fetch(`/api/follow/${currentUserId}/following`, {
+            method: 'GET',
+            credentials: 'include'  // ★ 쿠키 포함
+        })
+            .then(res => {
+                console.log('응답 상태:', res.status);
+                if (!res.ok) {
+                    return res.text().then(text => {
+                        throw new Error(`HTTP ${res.status}: ${text}`);
+                    });
+                }
+                return res.json();
+            })
+            .then(users => {
+                console.log('팔로잉 목록 조회 성공:', users);
+                renderFollowingList(users);
+            })
+            .catch(err => {
+                console.error('팔로잉 목록 로드 실패:', err);
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">❌</div>
+                        <p>팔로잉 목록을 불러올 수 없습니다</p>
+                        <p style="font-size: 12px; margin-top: 8px; color: #d32f2f;">${err.message}</p>
+                    </div>
+                `;
+            });
+
+        document.getElementById('followingFooter').textContent = '팔로잉 목록';
+    }
+
+    /**
+     * 팔로워 목록 모달 열기 ★
+     */
+    function openFollowerModal() {
+        const modal = document.getElementById('followerModal');
+        const listContainer = document.getElementById('followerList');
+
+        modal.classList.add('show');
+        listContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+        console.log('팔로워 목록 조회 시작:', `/api/follow/${currentUserId}/followers`);
+
+        // ★ 팔로워 목록 API 호출 - credentials: 'include' 추가
+        fetch(`/api/follow/${currentUserId}/followers`, {
+            method: 'GET',
+            credentials: 'include'  // ★ 쿠키 포함
+        })
+            .then(res => {
+                console.log('응답 상태:', res.status);
+                if (!res.ok) {
+                    return res.text().then(text => {
+                        throw new Error(`HTTP ${res.status}: ${text}`);
+                    });
+                }
+                return res.json();
+            })
+            .then(users => {
+                console.log('팔로워 목록 조회 성공:', users);
+                renderFollowerList(users);
+            })
+            .catch(err => {
+                console.error('팔로워 목록 로드 실패:', err);
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">❌</div>
+                        <p>팔로워 목록을 불러올 수 없습니다</p>
+                        <p style="font-size: 12px; margin-top: 8px; color: #d32f2f;">${err.message}</p>
+                    </div>
+                `;
+            });
+
+        document.getElementById('followerFooter').textContent = '팔로워 목록';
+    }
+
+    /**
+     * 팔로잉 목록 모달 닫기
+     */
+    function closeFollowingModal() {
+        document.getElementById('followingModal').classList.remove('show');
+    }
+
+    /**
+     * 팔로워 목록 모달 닫기
+     */
+    function closeFollowerModal() {
+        document.getElementById('followerModal').classList.remove('show');
+    }
+
+    /**
+     * 팔로잉 목록 렌더링
+     */
+    function renderFollowingList(users) {
+        const listContainer = document.getElementById('followingList');
+
+        if (users.length === 0) {
+            listContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">😢</div>
+                    <p>아직 팔로우한 사람이 없습니다</p>
+                </div>
+            `;
+            return;
+        }
+
+        listContainer.innerHTML = users.map(user => `
+            <div class="user-item">
+                <div class="user-info">
+                    <div class="user-name">${user.username}</div>
+                    <div class="user-id">ID: ${user.id}</div>
+                </div>
+                <div class="user-actions">
+                    <button type="button" class="unfollow-btn" onclick="unfollowUser(${user.id})">
+                        언팔로우
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    /**
+     * 팔로워 목록 렌더링
+     */
+    function renderFollowerList(users) {
+        const listContainer = document.getElementById('followerList');
+
+        if (users.length === 0) {
+            listContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">😢</div>
+                    <p>아직 팔로워가 없습니다</p>
+                </div>
+            `;
+            return;
+        }
+
+        listContainer.innerHTML = users.map(user => `
+            <div class="user-item">
+                <div class="user-info">
+                    <div class="user-name">${user.username}</div>
+                    <div class="user-id">ID: ${user.id}</div>
+                </div>
+                <div class="user-actions">
+                    <button type="button" onclick="visitProfile(${user.id})">
+                        프로필 보기
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    /**
+     * 사용자 언팔로우
+     * ★ credentials: 'include' 추가
+     */
+    function unfollowUser(userId) {
+        if (!confirm('정말 언팔로우 하시겠습니까?')) {
+            return;
+        }
+
+        fetch(`/api/follow/${userId}`, {
+            method: 'DELETE',
+            credentials: 'include'  // ★ 쿠키 포함
+        })
+            .then(res => {
+                if (res.ok) {
+                    alert('언팔로우 했습니다');
+                    openFollowingModal(); // 목록 새로고침
+                    updateFollowStats(); // 수치 업데이트
+                }
+            })
+            .catch(err => console.error('언팔로우 실패:', err));
+    }
+
+    /**
+     * 프로필 방문 (선택사항)
+     */
+    function visitProfile(userId) {
+        // TODO: 사용자 프로필 페이지로 이동
+        alert(`사용자 ${userId}의 프로필로 이동`);
+    }
+
+    /**
+     * 모달 외부 클릭 시 닫기
+     */
+    window.addEventListener('click', function(event) {
+        const followingModal = document.getElementById('followingModal');
+        const followerModal = document.getElementById('followerModal');
+
+        if (event.target === followingModal) {
+            closeFollowingModal();
+        }
+        if (event.target === followerModal) {
+            closeFollowerModal();
+        }
+    });
+</script>
 </body>
 </html>
-
-<!--
-=== 인증된 사용자 접근 과정 ===
-
-1. 사용자가 /my-page 접근 시도
-2. SecurityConfig에서 .requestMatchers("/my-page").authenticated() 확인
-3. JwtFilter에서 쿠키의 access_token 검증:
-   - 토큰 존재 여부 확인
-   - 토큰 유효성 검증 (서명, 만료시간 등)
-   - 사용자명 추출하여 UserDetailsService로 사용자 정보 로드
-   - SecurityContext에 Authentication 객체 설정
-4. MainController.myPage() 메서드 실행:
-   - Authentication 객체에서 사용자명 추출
-   - Model에 username 속성 추가
-5. 이 템플릿 렌더링하여 사용자에게 표시
-
-=== 접근 권한 확인 ===
-
-인증되지 않은 사용자 접근 시:
-1. JwtFilter에서 토큰 없음 또는 유효하지 않음 확인
-2. SecurityContext에 Authentication 설정 안 됨
-3. Spring Security가 인증 필요 판단
-4. SecurityConfig의 authenticationEntryPoint 실행
-5. /auth/login으로 리다이렉트
-
-=== 마이페이지 확장 기능 제안 ===
-
-1. 사용자 정보 표시:
-<section>
-    <h2>사용자 정보</h2>
-    <p>사용자명: <span th:text="${username}"></span></p>
-    <p>권한: <span th:text="${#authentication.authorities}"></span></p>
-    <p>로그인 시간: <span th:text="${#authentication.details}"></span></p>
-</section>
-
-2. 로그아웃 기능:
-<section>
-    <h2>계정 관리</h2>
-    <form th:action="@{/auth/logout}" method="post">
-        <button type="submit">로그아웃</button>
-    </form>
-</section>
-
-3. 사용자 권한별 조건부 표시:
-<div th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
-    <h3>관리자 전용 메뉴</h3>
-    <a th:href="@{/admin}">관리자 페이지</a>
-</div>
-
-4. 프로필 수정 링크:
-<section>
-    <h2>프로필 관리</h2>
-    <a th:href="@{/profile/edit}">프로필 수정</a>
-    <a th:href="@{/profile/change-password}">비밀번호 변경</a>
-</section>
-
-=== CSS 스타일링 예시 ===
-
-<style>
-.welcome-container {
-    max-width: 800px;
-    margin: 50px auto;
-    padding: 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.welcome-message {
-    font-size: 1.2em;
-    color: #495057;
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.user-info {
-    background-color: white;
-    padding: 20px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-}
-
-.btn-logout {
-    background-color: #dc3545;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-</style>
-
-=== 보안 고려사항 ===
-
-1. XSS 방지: th:text 사용으로 HTML 이스케이프 처리
-2. 세션 관리: JWT 토큰 만료 시간 관리
-3. 권한 체크: Spring Security Expression 활용
-4. 로그아웃 기능: 토큰 무효화 처리
-
-=== Thymeleaf Security Integration ===
-
-Spring Security와 Thymeleaf 통합 시 추가 기능:
-- ${#authentication}: 현재 인증 정보 접근
-- ${#authorization}: 권한 체크 표현식
-- th:if="${#authentication.name != null}": 로그인 상태 확인
-
-예시:
-<div th:if="${#authentication.name != null}">
-    <p>로그인된 사용자: <span th:text="${#authentication.name}"></span></p>
-    <p>권한: <span th:text="${#authentication.authorities}"></span></p>
-</div>
-
-=== 에러 처리 ===
-
-만약 username이 null인 경우 대비:
-<span th:text="${username != null ? username : '게스트'}"></span>님 반갑습니다!
-
-또는 기본값 설정:
-<span th:text="${username ?: '알 수 없는 사용자'}"></span>님 반갑습니다!
--->

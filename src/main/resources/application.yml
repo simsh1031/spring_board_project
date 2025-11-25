@@ -14,7 +14,7 @@ spring:
     # 기본 활성화할 프로필 지정
     # dev: 개발 환경, prod: 운영 환경, test: 테스트 환경 등
 #    active: dev
-    active: prod
+    active: dev
     # 이 설정으로 application-dev.yml 파일이 자동으로 로드됨
     # 
     # Profile 우선순위:

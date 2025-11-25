@@ -69,6 +69,7 @@
             font-weight: 500;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            margin: 0 5px;
         }
 
         .nav-section a:hover {
@@ -106,6 +107,64 @@
         .create-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0, 200, 81, 0.4);
+        }
+
+        /* 카테고리 필터 섹션 */
+        .category-filter {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: #333;
+            margin-right: 10px;
+        }
+
+        .category-btn {
+            padding: 8px 16px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            color: #666;
+            display: inline-block;
+        }
+
+        .category-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .category-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .reset-btn {
+            padding: 8px 16px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .reset-btn:hover {
+            background: #d0d0d0;
         }
 
         .posts-list {
@@ -156,6 +215,17 @@
         .posts-list li .post-date {
             color: #7f8c8d;
             font-size: 0.9em;
+        }
+
+        .posts-list li .post-category {
+            display: inline-block;
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-right: 10px;
         }
 
         .posts-list li a {
@@ -215,13 +285,44 @@
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
+        /* ★ 검색 폼 (개선) */
         .search-form {
-            background: rgba(255, 255, 255, 0.7);
-            padding: 25px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            padding: 20px;
             border-radius: 15px;
             text-align: center;
-            margin-top: 30px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .search-form-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .search-form-row:last-child {
+            margin-bottom: 0;
+        }
+
+        /* ★ 검색 타입 선택 */
+        .search-type-select {
+            padding: 10px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .search-type-select:focus {
+            outline: none;
+            border-color: #667eea;
         }
 
         .search-form input {
@@ -230,7 +331,6 @@
             border-radius: 25px;
             font-size: 16px;
             width: 300px;
-            margin-right: 15px;
             transition: all 0.3s ease;
             background: white;
         }
@@ -251,11 +351,19 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            font-weight: 500;
         }
 
         .search-form button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .search-info {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+            text-align: center;
         }
 
         @media (max-width: 768px) {
@@ -267,10 +375,13 @@
                 font-size: 2em;
             }
 
-            .search-form input {
+            .search-form-row {
+                flex-direction: column;
+            }
+
+            .search-form input,
+            .search-type-select {
                 width: 100%;
-                margin-bottom: 15px;
-                margin-right: 0;
             }
 
             .posts-list li {
@@ -282,6 +393,11 @@
                 display: block;
                 margin: 5px 0;
             }
+
+            .category-filter {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
@@ -290,42 +406,85 @@
     <h1>게시글 목록</h1>
 
     <section class="nav-section">
-        <a th:href="@{/}">메인페이지로 이동</a>
+        <a th:href="@{/}">메인페이지</a>
+        <a th:href="@{/my-page}">마이페이지</a>
     </section>
 
     <section class="posts-section">
         <h2>게시글 목록</h2>
+
+        <!-- ★ 검색 폼 (최상단으로 이동) -->
+        <form class="search-form" th:action="@{/posts}" method="get">
+            <!-- 검색 타입 선택 -->
+            <div class="search-form-row">
+                <label for="searchType" style="font-weight: 600; color: #333;">검색 타입:</label>
+                <select id="searchType" name="searchType" class="search-type-select" th:value="${searchType}">
+                    <option value="title">제목 + 내용</option>
+                    <option value="author">작성자</option>
+                </select>
+            </div>
+
+            <!-- 검색어 입력 -->
+            <div class="search-form-row">
+                <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어를 입력하세요">
+                <input type="hidden" name="category" th:value="${category}">
+                <button type="submit">검색</button>
+            </div>
+
+            <!-- 검색 팁 -->
+            <div class="search-info" th:if="${keyword != ''}">
+                <span th:if="${searchType == 'title'}">📝 제목과 내용에서 "<span th:text="${keyword}"></span>"을 검색하고 있습니다.</span>
+                <span th:if="${searchType == 'author'}">👤 작성자 "<span th:text="${keyword}"></span>"의 게시글을 검색하고 있습니다.</span>
+            </div>
+        </form>
+
         <a class="create-btn" th:href="@{/posts/new}">게시글 작성</a>
+
+        <!-- 카테고리 필터 섹션 -->
+        <div class="category-filter">
+            <span class="filter-label">카테고리:</span>
+
+            <!-- 전체 보기 -->
+            <a th:href="@{/posts(page=1, keyword=${keyword}, searchType=${searchType})}"
+               class="category-btn"
+               th:classappend="${category == '' ? 'active' : ''}">
+                전체
+            </a>
+
+            <!-- 각 카테고리 필터 (국내, 해외) -->
+            <th:block th:each="cat : ${categories}">
+                <a th:href="@{/posts(page=1, keyword=${keyword}, category=${cat}, searchType=${searchType})}"
+                   class="category-btn"
+                   th:text="${cat}"
+                   th:classappend="${category == cat ? 'active' : ''}">
+                </a>
+            </th:block>
+        </div>
+
         <ul class="posts-list">
             <li th:each="p : ${posts}">
                 번호 : <span class="post-id" th:text="${p.id}"></span>
                 | 작성자 : <span class="post-author" th:text="${p.username}"></span>
+                | 카테고리 : <span class="post-category" th:text="${p.category}"></span>
                 | 제목 : <span class="post-title" th:text="${p.title}"></span>
                 | 작성일 : <span class="post-date" th:text="${p.createdAt}"></span>
                 | <a th:href="@{'/posts/' + ${p.id}}">자세히 보기</a>
             </li>
         </ul>
 
-        <!-- 페이징 -->
+        <!-- 페이지네이션 -->
         <section class="pagination">
-            <!-- #numbers.sequence -> 끝값을 포함 -->
             <span th:each="i : ${#numbers.sequence(1, totalPages)}">
-                    <a th:if="${i != currentPage}"
-                       th:href="@{/posts?page={id}(id=${i})}"
-                       th:text="${i}"></a>
-                    <a th:if="${i == currentPage}"
-                       th:href="@{/posts?page={id}(id=${i})}"
-                       th:text="${i}"
-                       style="font-weight:bold;">
-                    </a>
-                </span>
+                <a th:if="${i != currentPage}"
+                   th:href="@{/posts(page=${i}, keyword=${keyword}, category=${category}, searchType=${searchType})}"
+                   th:text="${i}"></a>
+                <a th:if="${i == currentPage}"
+                   th:href="@{/posts(page=${i}, keyword=${keyword}, category=${category}, searchType=${searchType})}"
+                   th:text="${i}"
+                   style="font-weight:bold;"></a>
+            </span>
         </section>
 
-        <!-- 검색 -->
-        <form class="search-form" th:action="@{/posts}">
-            <input name="keyword" placeholder="검색어를 입력하세요">
-            <button>검색</button>
-        </form>
     </section>
 </div>
 </body>

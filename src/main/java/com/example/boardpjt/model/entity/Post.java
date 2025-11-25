@@ -67,6 +67,8 @@ public class Post extends BaseEntity {
     // - 게시물 내용은 길어질 수 있으므로 TEXT 타입이 적합
     private String content;
 
+
+    private String category;
     /**
      * 게시물 작성자 (연관관계 매핑)
      * UserAccount 엔티티와 다대일(ManyToOne) 관계를 형성
